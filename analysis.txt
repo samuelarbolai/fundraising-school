@@ -1,0 +1,71 @@
+FundraisingSchool.com Design Review - 2025-10-24
+
+Existing Context Summary
+- Mission brief highlights opportunity to differentiate Fundraising School with stronger storytelling, personal branding, case studies, and testimonials versus 30x.org.
+
+Snapshot Observations (desktop hero to footer)
+- Hero copy is inspirational but feels generic; no immediate proof of credibility or strong founder presence.
+- Primary CTA "Apply" appears twice but lacks supporting context (what happens next, deadline urgency, eligibility).
+- Visual hierarchy leans heavily on text blocks; dense paragraphs reduce scannability.
+- Speaker and mentor grids dominate page length with repetitive card layout and minimal differentiation.
+- Curriculum section relies on a static image, which feels like a placeholder and is not accessible.
+- Social proof limited to partner logos and speaker rosters; no outcomes, cohort stats, or testimonials.
+- FAQ items exist but without accordions open by default; may hide key objections.
+
+Strengths
+- Clear navigation with anchor links to key sections (About, Speakers, Curriculum, Q&A).
+- Strong roster of recognizable names; high-caliber mentors can anchor credibility.
+- Repeated CTA in hero and near footer keeps application action visible.
+- Clean, modern typography and whitespace create a polished baseline.
+
+Experience Gaps and Risks
+- Missing personal brand hook: neither Laura Gaviria Halaby nor Andres Bilbao appear in the hero; no founder story or quote.
+- Lack of specific outcomes (funding raised, alumni success) makes program value ambiguous.
+- Overreliance on grayscale photography and logos reduces emotional connection.
+- Speakers grid overwhelms other content; visitors may abandon before reaching curriculum or application CTA.
+- No mention of cohort structure, time commitment, or program format beyond "6-week" note, leading to friction for serious applicants.
+- "100% Free" statement may trigger skepticism without explanation of business model or selection criteria.
+- Accessibility issues likely within text-over-image treatments and static curriculum image.
+
+Stakeholder Inputs (2025-10-24)
+- Primary audience: English-speaking tech startup founders actively raising capital; messaging can focus on pre-seed through growth rounds looking for LATAM-friendly backers.
+- Proof assets: Testimonials and case studies are available, plus permission to surface multiple outcome metrics (capital raised, acceptance rates, alumni wins).
+- Content language: English-only experience requested; no immediate need for bilingual layouts.
+- Application flow: CTA routes to Airtable form requesting founder identity, country, WhatsApp contact, LinkedIn, traction (ARR bands), funds raised, pitch deck upload, motivations, and referral source before requiring privacy-policy acknowledgment.
+- Acquisition notes: Current applicants mainly come from organic SEO; legacy content marketing paused while another program (30x.org) is prioritized. Useful to clarify positioning differences between founders-focused Fundraising School and executive-focused 30x.org to avoid brand confusion.
+- Cross-program alignment: Desire to create synergy between Fundraising School and 30x.org so traffic cross-pollinates and both experiences share a cohesive design language grounded in Andrés Bilbao's values. Need a shared brand system and deliberate cross-linking.
+- Compliance: No additional privacy/compliance messaging requested beyond existing policy link.
+
+Andrés Bilbao Brand Values (research 2025-10-24)
+- Growth mindset and relentless execution: Rappi culture prizes hard work, forming entrepreneurs, communication, conviction, rapid crisis response, user listening, and execution that drives regional tech impact (thefryeshow.com/andres-bilbao-remaster).
+- Ecosystem pay-it-forward: Active mentorship and resource sharing through Makers Fellowship, B2founders, community dinners, and public talks to boost emerging founders across LATAM (thefryeshow.com/andres-bilbao-remaster; urosario.edu.co/periodico-nova-et-vetera/nuestra-u/un-poco-de-lo-que-fue-hablar-con-andres-bilbao-co-founder-de-rappi).
+- Customer-first excellence: Builds high-performing teams around customer obsession, operational excellence, continuous improvement, and advanced technology adoption (mintic.gov.co/cumbre-ia/854/w3-article-383777.html).
+- Continuous learning and humility: Encourages founders to expand their mindset, recover from failure, seek guidance from experts, and remix proven ideas instead of reinventing the wheel (sparklab.co/en/guest-andres-bilbao).
+- Ambition without borders: Champions shedding limiting beliefs, mastering skills beyond academia (selling, investing, risk management), and believing talent is geography-agnostic for LATAM founders (urosario.edu.co/periodico-nova-et-vetera/nuestra-u/un-poco-de-lo-que-fue-hablar-con-andres-bilbao-co-founder-de-rappi).
+
+Opportunities and Design Recommendations
+1. Reframe hero for personal brand plus proof: introduce founders portraits, concise mission statement, and a headline that anchors the unique value proposition (example: "LATAM founders fundraise with the team behind Rappi"). Add microcopy under the CTA describing application steps and subtle selection-language such as "Selected founders unlock $50K+ in perks and a tier-1 investor network."
+2. Layer immediate social proof: feature a testimonial or headline stat (example: "$X raised by alumni") near the hero; consider a short video clip or quote from Andres or Laura.
+3. Craft a "Why this program" narrative block before the presenter roster: stage pain → solution → outcomes in an elegant parallax scroll with refined typography accents (no generic icons), keeping copy crisp and high-impact.
+4. Replace static curriculum image with a refined "What You'll Master" narrative that spells out the core fundraising skills founders gain (storytelling, investor targeting, diligence prep) without heavy UI—prioritize elegant copy, optional subtle animation, and clear learning promises.
+5. Restructure speakers and mentors into carousel or segmented tabs (Founders, Investors, Operators) to reduce scroll fatigue and keep important names visible without overwhelming.
+6. Introduce case study and story section: highlight 2-3 alumni journeys with metrics, quotes, and headshots; link to longer stories if available.
+7. Expand community and perks with clearer partner benefit details and estimated savings, possibly a grid summarizing value.
+8. Optimize CTA strategy: add a sticky apply button or floating banner, include contextual CTAs after key sections, and add calendar reminders for deadlines.
+9. Deepen FAQ with quick-read toggles, include selection process, time zones, language, and support expectations; consider an inline question form rather than only an email link.
+10. Elevate visual identity: incorporate accent colors tied to founders brands, add custom iconography, and diversify imagery (cohort photos, event shots) for authenticity while aligning with a shared design system used on 30x.org to reinforce Andrés Bilbao's brand narrative.
+11. Build cross-program pathways: introduce contextual cross-links (e.g., "Looking to upskill corporate teams? Explore 30x.org") and shared footer navigation so traffic between initiatives compounds while keeping audience segmentation clear.
+
+Open Questions for Stakeholder
+- Who exactly is the primary audience (funding stage, region, industry focus) and what objections do they express most often? Answer 2025-10-24: English-speaking tech founders seeking capital; need to address fundraising readiness and investor fit.
+- What quantifiable outcomes or success metrics can we showcase (capital raised, acceptance rates, alumni companies)? Answer 2025-10-24: All categories approved—surface capital raised, acceptance, and alumni wins.
+- Do you have testimonials, case studies, or founder stories with permission to publish? If not, can we interview alumni quickly? Answer 2025-10-24: Testimonials and case studies available.
+- Are there brand guidelines, color palettes, photography assets, or portrait sessions we must align with?
+- Can we access data on site conversion (traffic to apply) to target the most impactful sections first?
+- Should the site support bilingual content (English and Spanish) or region-specific messaging? Answer 2025-10-24: English-only site requested.
+- What is the follow-up flow after someone clicks "Apply" (form platform, qualification steps) so we can set expectations inline? Answer 2025-10-24: Application captured via Airtable form collecting founder info, traction, deck, motivations, and privacy acknowledgment.
+- Any regulatory or privacy considerations around participant data we should surface in the copy?
+
+Next Steps (pending your input)
+- Prioritize the above recommendations based on business goals and available assets.
+- Outline wireframe updates per section once we align on messaging hierarchy and proof points.

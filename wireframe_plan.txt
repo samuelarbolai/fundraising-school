@@ -1,0 +1,113 @@
+Fundraising School Website Refresh
+Drafted: 2025-10-24
+
+1. Objectives
+- Convert English-speaking tech founders who are actively raising capital by rapidly proving credibility, clarity, and differentiated value versus other fundraising programs.
+- Broadcast Andrés Bilbao's founder-first ethos through consistent visual language, founder narratives, and trust cues shared with 30x.org.
+- Reduce friction in the application journey by previewing Airtable requirements, setting expectations, and reinforcing support touchpoints.
+- Leverage social proof (testimonials, metrics, alumni stories) to neutralize skepticism about a free program and inspire action.
+- Create reciprocal traffic loops between Fundraising School and 30x.org without blurring each program's target audience.
+
+2. Guiding Principles
+- Founder-Led Storytelling: Lead with Andrés Bilbao and Laura Gaviria Halaby to anchor authenticity and expertise.
+- Proof Before Pitch: Every major content block accompanies evidence (metrics, quotes, recognizable logos) before requesting action.
+- Clarity and Momentum: Short, scannable sections with progressive disclosure that keep the Apply CTA visible and contextual.
+- Shared Brand System: Typography, color accents, iconography, and illustration styles mirror a unified Andrés Bilbao brand used on both Fundraising School and 30x.org.
+- Intentional Cross-Pollination: Introduce targeted cross-links that help founders discover 30x.org (and vice versa) while making it easy to self-select into the right program.
+- Accessibility and Inclusivity: Design components with accessible contrast, semantic structure, and clear microcopy for global English-speaking founders.
+
+3. Wireframe Outline (Desktop-first)
+- Global Header
+  * Left: shared wordmark (responsive lockup) linking home; matches 30x.org typography/colors.
+  * Center nav: About, Program, Speakers, Success Stories, FAQ, Apply.
+  * Right: "30x.org" pill link (secondary style) plus primary Apply button; sticky behavior on scroll with subtle shadow.
+- Hero (fold)
+  * Split layout: left column headline "Raise capital with the builders behind Rappi" supported by subhead clarifying 6-week, founder-led format; right column features portraits of Andrés and Laura with pull-quote overlay.
+  * Key proof bar (inline): "Backed founders have raised $X across Y countries" + logos carousel (3-4) to reinforce immediacy.
+  * Primary CTA "Start Your Application" with microcopy "Takes ~5 minutes • Selected founders unlock $50K+ in perks" linking to requirements modal.
+  * Secondary link to learn about 30x.org for corporate leaders (drives cross-traffic without confusing hero action).
+- Application Preview Modal (triggered from hero CTA)
+  * Two-column checklist summarizing Airtable fields; highlights need for deck, ARR band, and privacy acknowledgment; includes optional download/print PDF.
+- Why Fundraising School (parallax narrative)
+  * Full-width scroll block with subtle parallax background gradients; each stanza fades in: Pain → Solution → Outcomes.
+  * Pain: "Fundraising alone is costly" (rejection fatigue, generic playbooks, lost runway) presented as elegant three-line copy with slim divider.
+  * Solution: "Builder-led playbook" (6-week live sessions, tactical office hours, curated peer network) revealed as user scrolls.
+  * Outcomes: "Investor-ready in weeks" (narrative clarity, warm investor paths, momentum to keep building) capped with contextual CTA "See what you'll master".
+  * Replace heavy icons with refined typographic markers or line art accents animated on scroll.
+- Success Proof Strip
+  * Full-width slider with combined testimonial + metric: alumni headshot, quote, outcome (e.g., "$8M Series A closed"), investor logos.
+  * CTA to "Read Alumni Stories" linking to dedicated case study page.
+- What You'll Master
+  * Minimal grid or stacked cards outlining core skill gains: Story investors buy, Targeting the right funds, Data room readiness, Closing confidently.
+  * Each card pairs one-line promise with supporting microcopy and an optional hover/expand for the related live session format.
+  * Secondary CTA "Get the detailed syllabus" gated by email (optional) for lead capture.
+- Founders & Faculty
+  * Tabbed interface (Founders, Speakers, Mentors) to reduce vertical scroll; each tab highlights 4-6 featured profiles with "View all" link.
+  * Callout card linking to 30x.org featuring overlapping mentor/faculty to communicate ecosystem.
+- Community & Perks
+  * Value grid summarizing partner benefits with estimated dollar value saved; includes testimonial about community support.
+- Application Journey
+  * Stepper illustrating stages: Apply (Airtable) → Selection Interview → Cohort Start → Ongoing Alumni Network.
+  * Integrates FAQ snippets for common objections (time commitment, language, location).
+- FAQ Accordions
+  * Grouped by theme (Eligibility, Commitment, Support, Privacy) with inline contact form for additional questions.
+- Cross-Program CTA
+  * Banner near footer: "Scaling a corporate innovation team? Explore 30x.org" with matching design; reciprocal asset on 30x.org should invite founders to Fundraising School.
+- Footer
+  * Shared layout with 30x.org: logo, quick links, social handles, newsletter signup, privacy link, and secondary "Apply" CTA.
+
+Mobile considerations
+- Header collapses into hamburger with persistent Apply button.
+- Hero stack portrait below copy with swipeable testimonials.
+- Tabs convert to horizontal scroll chips for Faculty section.
+- Timeline compresses into accordion by week with sticky "Apply" button at bottom.
+
+4. Messaging Hierarchy & Content Requirements
+- Core Narrative Flow
+  1. Credibility: Lead with Andrés and Laura as operators who have helped raise capital for 17+ startups; reinforce with aggregated metrics.
+  2. Value: Explain the 6-week curriculum, community, and mentorship in plain language with tangible takeaways.
+  3. Proof: Showcase alumni wins, testimonials, and investor partnerships before asking visitors to apply.
+  4. Clarity: Outline the application process, time commitment, and support structure to reduce uncertainty.
+  5. Action: Keep Apply CTA persistent and contextual, reminding applicants of limited seats and dates.
+- Tone and Voice
+  * Confident, direct, builder-to-builder language; avoid corporate jargon.
+  * Emphasize generosity and pay-it-forward ethos consistent with Andrés Bilbao’s brand.
+- Key Copy Blocks Needed
+  * Hero headline, subhead, and CTA microcopy (preview application requirements).
+  * Founder story spotlight with short bios and a unifying quote about the mission.
+  * Program pillars copy (Masterclasses, Tactical Support, Community).
+  * Curriculum module descriptions with outcomes per week.
+  * Success stories (2-3) with metrics, quotes, and images.
+  * Community/perk value summaries with estimated savings and partner descriptions.
+  * Application stepper copy plus FAQ updates aligning with Airtable fields.
+  * Cross-program explainer differentiating Fundraising School vs. 30x.org.
+  * Footer newsletter invite reinforcing ongoing ecosystem updates.
+  * Pain → Solution → Outcomes narrative copy (3x 2-line stanzas) for the parallax "Why this program" block, including supportive proof points.
+  * Selection-language snippets ("Selected founders unlock $50K+ in perks and a tier-1 investor network") woven into hero, community, and CTA microcopy.
+
+5. Cross-Program Synergy Tactics
+- Shared Visual Language: align typography, button styles, and color accents across both sites; introduce "Andrés Bilbao Ecosystem" badge used in headers or footers.
+- Reciprocal CTAs: Fundraising School footer/banner links to 30x.org for corporate teams, while 30x.org includes "Need fundraising help?" link back.
+- Storytelling Bridge: Create a narrative block explaining how the same team supports founders and executives, highlighting complementary outcomes.
+- Content Hubs: Plan future blog or resource hub that surfaces case studies relevant to both audiences with segmented CTAs.
+- Tracking & Analytics: Tag cross-site links with UTM parameters to measure traffic lift and conversions attributable to synergy efforts.
+
+6. Recommended Assets & Validation Steps
+- Assets to Gather
+  * High-resolution portraits of Andrés, Laura, and featured speakers/mentors with usage rights.
+  * Alumni testimonials (video and text) plus performance metrics.
+  * Partner logos in vector format and perk value details.
+  * Updated brand guidelines or palette references (pending from stakeholder).
+  * Airtable form screenshots or schema for building preview modal.
+- Experience Validation
+  * Usability test with 3-5 founders focusing on hero comprehension, application preview clarity, and navigation to success stories.
+  * A/B test hero headline variants emphasizing community vs. outcomes once traffic allows.
+ * Monitor form completion rate post-launch to confirm microcopy reduces drop-off.
+ * Track cross-site traffic patterns to ensure reciprocal CTAs generate engagement without cannibalizing conversions.
+
+7. Andrés Bilbao Value Translation
+- Growth mindset & execution → Hero quote from Andrés on building relentlessly, tactical CTA copy highlighting action steps, and curriculum modules that end with "Ship/Apply" exercises.
+- Pay-it-forward mentorship → Community section showcases Makers Fellowship ethos, integrates mentor spotlights with "How they give back" snippets, and cross-links to 30x.org resources for operators.
+- Customer-first excellence → Case studies and FAQ emphasize how alumni learn to listen to users, iterate quickly, and operationalize investor feedback; include microcopy on customer obsession in program pillars.
+- Continuous learning & humility → Include "What you'll practice" microcopy for each week, highlight office hours/coaching, and surface testimonials about embracing feedback.
+- Ambition without borders → Narrative block encourages LatAm founders to think globally, share stats on diverse cohorts, and add optional resource hub with selling/investing primers sourced from program content.

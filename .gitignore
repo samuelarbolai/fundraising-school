@@ -1,0 +1,19 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+.cache/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env & OS noise
+.env*
+.DS_Store
+
+# Package managers
+.pnpm-store/
+.pnp.*
