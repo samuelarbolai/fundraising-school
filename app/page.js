@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { FriendlyVcChatModal } from "./components/FriendlyVcChatModal";
 
 function useRevealAnimations() {
   useEffect(() => {
@@ -182,6 +183,7 @@ function useForms() {
 }
 
 export default function HomePage() {
+  const [isFriendlyVcOpen, setIsFriendlyVcOpen] = useState(false);
   useRevealAnimations();
   useParallax();
   useTestimonialSlider();
@@ -189,8 +191,17 @@ export default function HomePage() {
   useAccordions();
   useForms();
 
+  const openFriendlyVc = () => setIsFriendlyVcOpen(true);
+  const handleFriendlyVcKeyDown = event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      setIsFriendlyVcOpen(true);
+    }
+  };
+
   return (
     <>
+      <FriendlyVcChatModal open={isFriendlyVcOpen} onClose={() => setIsFriendlyVcOpen(false)} />
       <header className="site-header">
         <div className="logo-lockup">
           <img src="/assets/logo-negro.svg" alt="Fundraising School" className="logo" />
@@ -503,42 +514,37 @@ export default function HomePage() {
 
         <section id="community" className="section perks">
           <div className="section-heading reveal" data-reveal="fade-up">
-            <p className="section-eyebrow">Curated value</p>
-            <h2>Selected founders gain ongoing access worth $50K+</h2>
+            <p className="section-eyebrow">Tools for founders</p>
+            <h2>Two copilots that travel with every cohort</h2>
+            <p className="section-intro">
+              These aren’t future promises—they ship on day one so you can pressure-test your raise with real feedback and
+              fresh deal flow.
+            </p>
           </div>
           <div className="perks-grid">
-            <article className="perk-card reveal" data-reveal="fade-in">
-              <h3>Partner perks</h3>
+            <article
+              className="perk-card reveal interactive"
+              data-reveal="fade-in"
+              role="button"
+              tabIndex={0}
+              aria-label="Open the Friendly VC chat agent"
+              onClick={openFriendlyVc}
+              onKeyDown={handleFriendlyVcKeyDown}
+            >
+              <h3>Friendly VC agent</h3>
               <p>
-                $35K in tools from AWS, Notion, Pitch, Deel, and more. Negotiated specifically for Fundraising School
-                cohorts.
+                A straight-talking partner trained on Fundraising School playbooks and investor notes. Use it to stress-test
+                your deck, practice objections, and tighten the story investors hear first.
               </p>
-              <span className="pill">Est. value: $35K</span>
+              <span className="pill accent">Conversation-based</span>
             </article>
-            <article className="perk-card reveal" data-reveal="fade-in" data-delay="80">
-              <h3>Warm investor intros</h3>
-              <p>Matchmaking across angels, funds, and strategic partners once your story and traction hit the bar.</p>
-              <span className="pill accent">72% land second meetings</span>
-            </article>
-            <article className="perk-card reveal" data-reveal="fade-in" data-delay="160">
-              <h3>Community &amp; accountability</h3>
-              <p>Weekly pods, async feedback channels, and alumni office hours to keep momentum after demo week.</p>
-              <span className="pill">Lifetime access</span>
-            </article>
-            <article className="perk-card reveal" data-reveal="fade-in" data-delay="240">
-              <h3>Operator hotline</h3>
-              <p>Need help negotiating terms or restructuring a data room? Tap mentors who have closed rounds across LATAM.</p>
-              <span className="pill accent">Response in &lt;24h</span>
-            </article>
-            <article className="perk-card reveal" data-reveal="fade-in" data-delay="320">
-              <h3>30X ecosystem bridge</h3>
-              <p>Cross-program events, shared content drops, and introductions to executive alumni who become customers.</p>
-              <span className="pill">Cross-program access</span>
-            </article>
-            <article className="perk-card reveal" data-reveal="fade-in" data-delay="400">
-              <h3>Founder labs</h3>
-              <p>Hands-on simulations across negotiation, investor updates, and board prep to accelerate your next milestone.</p>
-              <span className="pill accent">Live + async</span>
+            <article className="perk-card reveal" data-reveal="fade-in" data-delay="120">
+              <h3>LATAM lead sourcing hub</h3>
+              <p>
+                Curated lists for B2B customers, talent, and investors across the region. We keep the data warm so you can
+                focus on outreach that actually converts.
+              </p>
+              <span className="pill">New drops each week</span>
             </article>
           </div>
         </section>
