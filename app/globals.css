@@ -1212,6 +1212,339 @@ textarea:focus-visible {
   cursor: wait;
 }
 
+.latam-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem clamp(1.5rem, 5vw, 3rem);
+  background: rgba(14, 17, 17, 0.55);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 180ms ease, visibility 180ms ease;
+  z-index: 1200;
+}
+
+.latam-modal.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.latam-modal__dialog {
+  width: min(520px, 100%);
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid rgba(1, 1, 1, 0.08);
+  box-shadow: var(--shadow-strong);
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+  gap: 1.4rem;
+}
+
+.latam-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+
+.latam-modal__header h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 1rem;
+}
+
+.latam-modal__subtitle {
+  margin: 0.35rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  max-width: 36ch;
+}
+
+.latam-modal__close {
+  background: transparent;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--color-muted);
+  transition: color 150ms ease;
+}
+
+.latam-modal__close:hover,
+.latam-modal__close:focus-visible {
+  color: var(--color-black);
+}
+
+.latam-modal__body ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.4rem;
+  color: var(--color-muted);
+}
+
+.latam-modal__footer {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.latam-modal__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.6rem;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--color-black);
+  color: #ffffff;
+  transition: transform var(--transition-snappy), box-shadow var(--transition-snappy);
+}
+
+.latam-modal__cta:hover,
+.latam-modal__cta:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-strong);
+}
+
+.latam-modal__helper {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--color-muted);
+}
+
+.latam-page {
+  min-height: 100vh;
+  padding: clamp(3rem, 6vw, 4.5rem) clamp(1.5rem, 6vw, 4rem) 4rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f6f9f6 80%, #ffffff 100%);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 5vw, 3.5rem);
+}
+
+.latam-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.latam-page__eyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0 0 0.8rem;
+  color: var(--color-muted);
+}
+
+.latam-page__header h1 {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 5vw, 3rem);
+}
+
+.latam-page__intro {
+  margin: 0;
+  max-width: 54ch;
+  color: var(--color-muted);
+  font-size: 1.05rem;
+}
+
+.latam-page__back {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.65rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(1, 1, 1, 0.12);
+  transition: transform var(--transition-snappy), box-shadow var(--transition-snappy);
+}
+
+.latam-page__back:hover,
+.latam-page__back:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-soft);
+}
+
+.latam-page__panel {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: clamp(1.8rem, 4vw, 2.4rem);
+  border: 1px solid rgba(1, 1, 1, 0.08);
+  box-shadow: var(--shadow-soft);
+}
+
+.latam-query {
+  display: grid;
+  gap: 1rem;
+}
+
+.latam-query label {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.latam-query textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 120px;
+  border-radius: 18px;
+  border: 1px solid rgba(1, 1, 1, 0.12);
+  padding: 1rem 1.2rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.latam-query textarea:focus-visible {
+  border-color: var(--color-black);
+  box-shadow: 0 0 0 3px rgba(1, 1, 1, 0.08);
+  outline: none;
+}
+
+.latam-query__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.latam-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.latam-checkbox input {
+  width: 18px;
+  height: 18px;
+}
+
+.latam-query__buttons {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.latam-primary-btn,
+.latam-secondary-btn {
+  padding: 0.75rem 1.4rem;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  transition: transform var(--transition-snappy), box-shadow var(--transition-snappy);
+}
+
+.latam-primary-btn {
+  background: var(--color-black);
+  color: #ffffff;
+}
+
+.latam-secondary-btn {
+  background: rgba(1, 1, 1, 0.05);
+  color: var(--color-black);
+}
+
+.latam-primary-btn:hover,
+.latam-primary-btn:focus-visible,
+.latam-secondary-btn:hover,
+.latam-secondary-btn:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-soft);
+}
+
+.latam-results {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: clamp(1.8rem, 4vw, 2.4rem);
+  border: 1px solid rgba(1, 1, 1, 0.08);
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 1.5rem;
+}
+
+.latam-results__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.8rem;
+  font-size: 0.95rem;
+  color: var(--color-muted);
+}
+
+.latam-results__meta span {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-black);
+}
+
+.latam-table-wrapper {
+  overflow-x: auto;
+}
+
+.latam-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  min-width: 760px;
+}
+
+.latam-table th,
+.latam-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(1, 1, 1, 0.06);
+  text-align: left;
+}
+
+.latam-table th {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.latam-table tbody tr:hover {
+  background: rgba(1, 1, 1, 0.03);
+}
+
+.latam-table a {
+  color: var(--color-black);
+  font-weight: 600;
+}
+
+.latam-table__empty {
+  text-align: center;
+  color: var(--color-muted);
+  padding: 2rem 1rem;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(40px);
@@ -1271,6 +1604,21 @@ textarea:focus-visible {
   .testimonial-card {
     min-width: min(300px, 100vw);
   }
+
+  .latam-results__meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .latam-query__controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .latam-query__buttons {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 720px) {
@@ -1310,6 +1658,31 @@ textarea:focus-visible {
     padding: 1.35rem;
     border-radius: 20px;
     max-height: 90vh;
+  }
+
+  .latam-modal {
+    padding: 1.5rem;
+  }
+
+  .latam-modal__dialog {
+    padding: 1.35rem;
+    border-radius: 20px;
+  }
+
+  .latam-page {
+    padding: clamp(2.4rem, 10vw, 3.4rem) 1.4rem;
+  }
+
+  .latam-page__header {
+    gap: 1.5rem;
+  }
+
+  .latam-query__buttons {
+    justify-content: stretch;
+  }
+
+  .latam-query__buttons button {
+    flex: 1;
   }
 
   .friendly-vc-modal__header {
@@ -1359,6 +1732,22 @@ textarea:focus-visible {
 
   .friendly-vc-modal__dialog {
     padding: 1.15rem;
+  }
+
+  .latam-modal {
+    padding: 1.2rem;
+  }
+
+  .latam-modal__dialog {
+    padding: 1.15rem;
+  }
+
+  .latam-page {
+    padding: clamp(2rem, 12vw, 2.6rem) 1.1rem;
+  }
+
+  .latam-table {
+    font-size: 0.9rem;
   }
 
   .proof-bar span {

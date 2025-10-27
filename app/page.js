@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FriendlyVcChatModal } from "./components/FriendlyVcChatModal";
+import { LatamSourcingModal } from "./components/LatamSourcingModal";
 
 function useRevealAnimations() {
   useEffect(() => {
@@ -184,6 +185,7 @@ function useForms() {
 
 export default function HomePage() {
   const [isFriendlyVcOpen, setIsFriendlyVcOpen] = useState(false);
+  const [isLatamHubOpen, setIsLatamHubOpen] = useState(false);
   useRevealAnimations();
   useParallax();
   useTestimonialSlider();
@@ -198,10 +200,18 @@ export default function HomePage() {
       setIsFriendlyVcOpen(true);
     }
   };
+  const openLatamHub = () => setIsLatamHubOpen(true);
+  const handleLatamKeyDown = event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      setIsLatamHubOpen(true);
+    }
+  };
 
   return (
     <>
       <FriendlyVcChatModal open={isFriendlyVcOpen} onClose={() => setIsFriendlyVcOpen(false)} />
+      <LatamSourcingModal open={isLatamHubOpen} onClose={() => setIsLatamHubOpen(false)} />
       <header className="site-header">
         <div className="logo-lockup">
           <img src="/assets/logo-negro.svg" alt="Fundraising School" className="logo" />
@@ -538,7 +548,16 @@ export default function HomePage() {
               </p>
               <span className="pill accent">Conversation-based</span>
             </article>
-            <article className="perk-card reveal" data-reveal="fade-in" data-delay="120">
+            <article
+              className="perk-card reveal interactive"
+              data-reveal="fade-in"
+              data-delay="120"
+              role="button"
+              tabIndex={0}
+              aria-label="Open the LATAM lead sourcing hub preview"
+              onClick={openLatamHub}
+              onKeyDown={handleLatamKeyDown}
+            >
               <h3>LATAM lead sourcing hub</h3>
               <p>
                 Curated lists for B2B customers, talent, and investors across the region. We keep the data warm so you can
