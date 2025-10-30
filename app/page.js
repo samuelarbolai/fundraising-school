@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LatamSourcingModal } from "./components/LatamSourcingModal";
 import { FriendlyVcChatModal } from "./components/FriendlyVcChatModal";
@@ -261,7 +260,7 @@ export default function HomePage() {
           </a>
         </nav>
         <div className="nav-cta">
-          <a href="#cross-program" className="pill-link">
+          <a href="https://30x.org" className="pill-link" target="_blank" rel="noreferrer">
             Explore 30x.org
           </a>
           <a href="#apply" className="primary-btn apply-btn">
@@ -285,9 +284,9 @@ export default function HomePage() {
                   Start your application
                 </a>
                 <span className="cta-note">Takes ~5 minutes • Selected founders unlock $50K+ in perks</span>
-                <a href="#cross-program" className="secondary-link">
+                <a href="https://30x.org" className="secondary-link" target="_blank" rel="noreferrer">
                   Leading a corporate team? Explore 30x.org →
-                </a>
+                  </a>
               </div>
             </div>
             <div className="hero-visual">
@@ -315,6 +314,77 @@ export default function HomePage() {
             </span>
           </div>
         </section>
+
+        <section id="community" className="section perks">
+          <div className="section-heading reveal" data-reveal="fade-up">
+            <p className="section-eyebrow">Tools for founders</p>
+            <h2>Two copilots that travel with every cohort</h2>
+            <p className="section-intro">
+              These aren’t future promises—they ship on day one so you can pressure-test your raise with real feedback and
+              fresh deal flow.
+            </p>
+          </div>
+          <div className="perks-grid">
+            <article
+              className="perk-card interactive reveal"
+              data-reveal="fade-in"
+              role="button"
+              tabIndex={0}
+              onClick={openSalesCoach}
+              onKeyDown={handleSalesCoachKeyDown}
+              aria-label="Open the Sales Coach agent"
+            >
+              <h3>Sales coach agent</h3>
+              <p>
+                Sebas pushes founders past vanity answers and pressure-tests every sales motion. Jump in for brutal practice
+                sessions and pricing drills before the real investor call.
+              </p>
+              <span className="pill accent">Chat with Sebas</span>
+            </article>
+            <article
+              className="perk-card interactive reveal"
+              data-reveal="fade-in"
+              data-delay="80"
+              role="button"
+              tabIndex={0}
+              onClick={openAnalyst}
+              onKeyDown={handleAnalystKeyDown}
+              aria-label="Open the Friendly VC analyst agent"
+            >
+              <h3>Friendly VC analyst</h3>
+              <p>
+                Screen startups against the 30x thesis, get a fit label, and capture diligence-ready insights plus warm intro
+                ideas directly in chat.
+              </p>
+              <span className="pill">Run analysis</span>
+            </article>
+            <article
+              className="perk-card reveal interactive"
+              data-reveal="fade-in"
+              data-delay="160"
+              role="button"
+              tabIndex={0}
+              aria-label="Open the LATAM lead sourcing hub preview"
+              onClick={openLatamHub}
+              onKeyDown={handleLatamKeyDown}
+            >
+              <h3>LATAM lead sourcing hub</h3>
+              <p>
+                Curated lists for B2B customers, talent, and investors across the region. We keep the data warm so you can
+                focus on outreach that actually converts.
+              </p>
+              <span className="pill">New drops each week</span>
+            </article>
+          </div>
+        </section>
+
+        <div className="floating-program-card reveal" data-reveal="fade-in">
+          <span className="badge">Corporate innovation?</span>
+          <p>Scaling exec enablement squads? 30x.org runs custom programs.</p>
+          <a href="https://30x.org" target="_blank" rel="noreferrer">
+            Explore 30x.org →
+          </a>
+        </div>
 
         <section id="why" className="section parallax-narrative">
           <div className="parallax-track">
@@ -537,76 +607,6 @@ export default function HomePage() {
               </ul>
             </div>
           </div>
-          <aside className="faculty-sidecard reveal" data-reveal="fade-up">
-            <h3>Corporate innovation?</h3>
-            <p>Scaling executive teams or enablement squads? Our partners at 30x.org lead immersive programs for operators.</p>
-            <a href="#cross-program" className="primary-btn ghost-btn">
-              Discover 30x.org
-            </a>
-          </aside>
-        </section>
-
-        <section id="community" className="section perks">
-          <div className="section-heading reveal" data-reveal="fade-up">
-            <p className="section-eyebrow">Tools for founders</p>
-            <h2>Two copilots that travel with every cohort</h2>
-            <p className="section-intro">
-              These aren’t future promises—they ship on day one so you can pressure-test your raise with real feedback and
-              fresh deal flow.
-            </p>
-          </div>
-          <div className="perks-grid">
-            <article
-              className="perk-card interactive reveal"
-              data-reveal="fade-in"
-              role="button"
-              tabIndex={0}
-              onClick={openSalesCoach}
-              onKeyDown={handleSalesCoachKeyDown}
-              aria-label="Open the Sales Coach agent"
-            >
-              <h3>Sales coach agent</h3>
-              <p>
-                Sebas pushes founders past vanity answers and pressure-tests every sales motion. Jump in for brutal practice
-                sessions and pricing drills before the real investor call.
-              </p>
-              <span className="pill accent">Chat with Sebas</span>
-            </article>
-            <article
-              className="perk-card interactive reveal"
-              data-reveal="fade-in"
-              data-delay="80"
-              role="button"
-              tabIndex={0}
-              onClick={openAnalyst}
-              onKeyDown={handleAnalystKeyDown}
-              aria-label="Open the Friendly VC analyst agent"
-            >
-              <h3>Friendly VC analyst</h3>
-              <p>
-                Screen startups against the 30x thesis, get a fit label, and capture diligence-ready insights plus warm intro
-                ideas directly in chat.
-              </p>
-              <span className="pill">Run analysis</span>
-            </article>
-            <article
-              className="perk-card reveal interactive"
-              data-reveal="fade-in"
-              data-delay="160"
-              role="button"
-              tabIndex={0}
-              aria-label="Open the LATAM lead sourcing hub preview"
-              onClick={openLatamHub}
-              onKeyDown={handleLatamKeyDown}
-            >
-              <h3>LATAM lead sourcing hub</h3>
-              <p>
-                Curated lists for B2B customers, talent, and investors across the region. We keep the data warm so you can
-                focus on outreach that actually converts.
-              </p>
-              <span className="pill">New drops each week</span>
-            </article>
-          </div>
         </section>
 
         <section id="journey" className="section journey">
@@ -736,21 +736,13 @@ export default function HomePage() {
                 how we can help you win this round.
               </p>
             </div>
-            <a href="https://airtable.com" className="primary-btn apply-btn" target="_blank" rel="noopener noreferrer">
-              Apply via Airtable
-            </a>
-          </div>
-        </section>
-
-        <section id="cross-program" className="section cross-program">
-          <div className="cross-card reveal" data-reveal="fade-up">
-            <h2>Scaling corporate innovation teams?</h2>
-            <p>
-              30x.org brings the same operators to executives and enterprise squads. Share it with your partners, clients,
-              or leadership team.
-            </p>
-            <a href="https://30x.org" className="primary-btn ghost-btn" target="_blank" rel="noopener noreferrer">
-              Explore 30x.org
+            <a
+              href="https://form.typeform.com/to/XBJqESrb?utm_campaign=xxxxx&typeform-source=www.30x.org#ref_id=xxxxx"
+              className="primary-btn apply-btn"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Submit your application
             </a>
           </div>
         </section>
