@@ -153,11 +153,6 @@ export function FriendlyVcChatModal({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeMessages, open, hasAccess]);
 
-  useEffect(() => {
-    if (!open || !hasAccess) return;
-    loadLocalConversations();
-  }, [hasAccess, loadLocalConversations, open]);
-
   const loadLocalConversations = useCallback(() => {
     const stored = readLocalState(storageKey);
     if (!stored) {
@@ -171,6 +166,11 @@ export function FriendlyVcChatModal({
     setMessagesById(savedMessages);
     setActiveConversationId(savedConversations[0]?.id || null);
   }, [storageKey]);
+
+  useEffect(() => {
+    if (!open || !hasAccess) return;
+    loadLocalConversations();
+  }, [hasAccess, loadLocalConversations, open]);
 
   const persistLocalState = useCallback(
     (nextConversations, nextMessages) => {
