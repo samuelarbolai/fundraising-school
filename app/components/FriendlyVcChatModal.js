@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getEmailRedirectUrl } from "@/lib/supabase/emailRedirect";
 import { getInitialAssistantMessage } from "@/lib/friendlyVc/constants";
 
 const LOCAL_STORAGE_KEY = "friendly-vc-conversations";
@@ -276,7 +277,7 @@ export function FriendlyVcChatModal({
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.href,
+        emailRedirectTo: getEmailRedirectUrl(),
       },
     });
 

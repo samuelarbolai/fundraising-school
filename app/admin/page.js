@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getEmailRedirectUrl } from "@/lib/supabase/emailRedirect";
 import { FriendlyVcChatModal } from "@/components/FriendlyVcChatModal";
 
 const supabase = createClient();
@@ -135,7 +136,7 @@ export default function AdminPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.href,
+        emailRedirectTo: getEmailRedirectUrl(),
       },
     });
     if (error) {
