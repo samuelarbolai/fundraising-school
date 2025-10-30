@@ -5,6 +5,7 @@ import { agentOutputs, messages } from '@/lib/db/schema';
 import { db } from '@/lib/db';
 import { FriendlyVcError, requireAuthUser, logAiEvent } from '@/lib/friendlyVc/service';
 import { evaluateFriendlyAnalystSummary } from '@/lib/friendlyVc/evaluator';
+import { normalizeEvaluationResult } from '@/lib/friendlyVc/evaluationUtils';
 
 async function getConversationMessages(conversationId) {
   const rows = await db
@@ -46,7 +47,7 @@ export async function POST(request, { params }) {
   try {
     const user = await requireAuthUser();
     const body = await request.json().catch(() => ({}));
-    const extraInstructions = body?.instructions || '';
+    const promptOverride = typeof body?.promptOverride === 'string' ? body.promptOverride : '';
 
     const [output] = await db
       .select()
@@ -63,29 +64,24 @@ export async function POST(request, { params }) {
     }
 
     const conversationMessages = await getConversationMessages(output.conversationId);
-    const evaluation = await evaluateFriendlyAnalystSummary({ conversationMessages, extraInstructions });
-
-    const connectors = Array.isArray(evaluation?.connectors)
-      ? evaluation.connectors
-          .filter(item => item?.name)
-          .map(item => `${item.name}${item.why ? ` — ${item.why}` : ''}`)
-          .join('\n')
-      : null;
+    const evaluation = await evaluateFriendlyAnalystSummary({ conversationMessages, promptOverride });
+    const normalized = normalizeEvaluationResult(evaluation, { fallbackSummary: output.summary });
 
     await db
       .update(agentOutputs)
       .set({
-        summary: evaluation?.summary || output.summary,
-        fitLabel: evaluation?.fitLabel || output.fitLabel,
-        companyName: evaluation?.companyName || output.companyName,
-        founderName: evaluation?.founderName || output.founderName,
-        founderEmail: evaluation?.founderEmail || output.founderEmail,
-        founderPhone: evaluation?.founderPhone || output.founderPhone,
-        connectors: connectors ?? output.connectors,
+        summary: normalized.summary || output.summary,
+        fitLabel: normalized.fitLabel || output.fitLabel,
+        companyName: normalized.companyName || output.companyName,
+        founderName: normalized.founderName || output.founderName,
+        founderEmail: normalized.founderEmail || output.founderEmail,
+        founderPhone: normalized.founderPhone || output.founderPhone,
+        connectors: normalized.connectorsText || output.connectors,
         metadata: {
           ...(output.metadata || {}),
           lastRebuild: new Date().toISOString(),
           evaluation,
+          normalized,
         },
       })
       .where(eq(agentOutputs.id, params.outputId));

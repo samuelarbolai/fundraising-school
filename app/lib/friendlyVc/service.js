@@ -201,6 +201,8 @@ export async function getLatestPrompt(agentSlug) {
 }
 
 export async function recordAgentOutput({ conversationId, agentSlug, summary, fitLabel, companyName, founderName, founderEmail, founderPhone, connectors, metadata }) {
+  if (!conversationId) return;
+  await db.delete(agentOutputs).where(eq(agentOutputs.conversationId, conversationId));
   await db.insert(agentOutputs).values({
     conversationId,
     agentSlug,

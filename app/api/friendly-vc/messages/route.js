@@ -16,6 +16,7 @@ import {
 } from '@/lib/friendlyVc/service';
 import { streamChatCompletion, OpenAIRequestError } from '@/lib/friendlyVc/openaiClient';
 import { evaluateFriendlyAnalystSummary } from '@/lib/friendlyVc/evaluator';
+import { normalizeEvaluationResult } from '@/lib/friendlyVc/evaluationUtils';
 
 const DEFAULT_MODEL = process.env.OPENAI_FRIENDLY_VC_MODEL || 'gpt-4o-mini';
 const DEFAULT_PROMPT_VERSION = process.env.FRIENDLY_VC_PROMPT_VERSION || 'v1';
@@ -195,7 +196,10 @@ export async function POST(request) {
           model: result.model,
           tokenUsage: result.usage ?? null,
           latencyMs,
-          metadata: userEmail ? { recipientEmail: userEmail } : null,
+          metadata: {
+            ...(userEmail ? { recipientEmail: userEmail } : {}),
+            promptVersion,
+          },
         });
 
         await updateConversationMeta(conversationId, {
@@ -228,27 +232,24 @@ export async function POST(request) {
 
           try {
             const evaluation = await evaluateFriendlyAnalystSummary({ conversationMessages });
-            const connectors = Array.isArray(evaluation?.connectors)
-              ? evaluation.connectors
-                  .filter(item => item?.name)
-                  .map(item => `${item.name}${item.why ? ` — ${item.why}` : ''}`)
-                  .join('\n')
-              : null;
+            const normalized = normalizeEvaluationResult(evaluation);
 
             await recordAgentOutput({
               conversationId,
               agentSlug,
-              summary: evaluation?.summary || result.content,
-              fitLabel: evaluation?.fitLabel || null,
-              companyName: evaluation?.companyName || null,
-              founderName: evaluation?.founderName || null,
-              founderEmail: evaluation?.founderEmail || null,
-              founderPhone: evaluation?.founderPhone || null,
-              connectors,
+              summary: normalized.summary,
+              fitLabel: normalized.fitLabel || null,
+              companyName: normalized.companyName || null,
+              founderName: normalized.founderName || null,
+              founderEmail: normalized.founderEmail || null,
+              founderPhone: normalized.founderPhone || null,
+              connectors: normalized.connectorsText || null,
               metadata: {
                 source: 'auto-evaluation',
                 usage: result.usage ?? null,
                 raw: evaluation,
+                normalized,
+                signals: normalized.signals,
                 requesterEmail: userEmail,
               },
             });
@@ -262,7 +263,7 @@ export async function POST(request) {
               model: result.model,
               metadata: {
                 agentSlug,
-                fitLabel: evaluation?.fitLabel || null,
+                fitLabel: normalized.fitLabel || null,
                 userEmail,
               },
             });
@@ -284,7 +285,7 @@ export async function POST(request) {
             await recordAgentOutput({
               conversationId,
               agentSlug,
-              summary: result.content,
+              summary: 'Summary unavailable.',
               fitLabel: fallbackFit ? fallbackFit[1].split('\n')[0].trim() : null,
               metadata: {
                 source: 'raw-response',

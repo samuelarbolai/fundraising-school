@@ -9,14 +9,11 @@ function buildTranscript(messages) {
     .join("\n\n");
 }
 
-export async function evaluateFriendlyAnalystSummary({ conversationMessages, extraInstructions }) {
+export async function evaluateFriendlyAnalystSummary({ conversationMessages, promptOverride }) {
   const transcript = buildTranscript(conversationMessages);
-  const systemInstruction = [
-    friendlyVcEvaluationPrompt,
-    extraInstructions ? `\nAnalyst note: ${extraInstructions}` : '',
-  ]
-    .filter(Boolean)
-    .join('\n');
+  const systemInstruction = promptOverride && promptOverride.trim().length > 0
+    ? promptOverride.trim()
+    : friendlyVcEvaluationPrompt;
 
   const payload = {
     model: DEFAULT_MODEL,
