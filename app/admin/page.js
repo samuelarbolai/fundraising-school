@@ -1,12 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { FriendlyVcChatModal } from "@/components/FriendlyVcChatModal";
 
-const supabase = createClient();
-const ADMIN_REDIRECT_URL = "https://fundraising-school.onrender.com/admin";
-
+const ADMIN_PASSWORD = "1234";
 const DEFAULT_AGENT_SLUG = "sales-coach";
 
 const AGENT_CONFIG = {
@@ -25,22 +22,26 @@ const AGENT_CONFIG = {
 };
 
 export default function AdminPage() {
-  const [authStatus, setAuthStatus] = useState("loading"); // loading | signedOut | pending | ready | forbidden
-  const [email, setEmail] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  const [password, setPassword] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authError, setAuthError] = useState("");
   const [agents, setAgents] = useState([]);
   const [selectedAgentSlug, setSelectedAgentSlug] = useState(DEFAULT_AGENT_SLUG);
   const [prompts, setPrompts] = useState([]);
   const [currentPrompt, setCurrentPrompt] = useState(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(true);
   const [admins, setAdmins] = useState([]);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [promptVersion, setPromptVersion] = useState("");
   const [promptContent, setPromptContent] = useState("");
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
 
-  const agentConfig = useMemo(() => AGENT_CONFIG[selectedAgentSlug] || AGENT_CONFIG[DEFAULT_AGENT_SLUG], [selectedAgentSlug]);
+  const agentConfig = useMemo(
+    () => AGENT_CONFIG[selectedAgentSlug] || AGENT_CONFIG[DEFAULT_AGENT_SLUG],
+    [selectedAgentSlug]
+  );
+
   const agentOptions = useMemo(() => {
     if (agents.length) {
       return agents.map(agent => ({
@@ -53,143 +54,125 @@ export default function AdminPage() {
 
   const resetFeedback = () => setFeedback(null);
 
-  const fetchPrompts = useCallback(async (agent = selectedAgentSlug) => {
-    resetFeedback();
-    const response = await fetch(`/api/admin/prompts?agent=${agent}`, { cache: "no-store" });
-    if (response.status === 401) {
-      setAuthStatus("signedOut");
-      return { isSuperAdmin: false };
-    }
-    if (response.status === 403) {
-      setAuthStatus("forbidden");
-      return { isSuperAdmin: false };
-    }
-    if (!response.ok) {
-      setFeedback({ type: "error", message: "Failed to load prompts." });
-      return { isSuperAdmin: false };
-    }
-    const payload = await response.json();
-    setPrompts(Array.isArray(payload?.prompts) ? payload.prompts : []);
-    setCurrentPrompt(payload?.currentPrompt || null);
-    const superFlag = Boolean(payload?.isSuperAdmin);
-    setIsSuperAdmin(superFlag);
-    if (!superFlag) {
-      setAdmins([]);
-    }
-    if (Array.isArray(payload?.agents)) {
-      setAgents(payload.agents);
-    }
-    if (payload?.agentSlug) {
-      setSelectedAgentSlug(payload.agentSlug);
-    }
-    return { isSuperAdmin: superFlag };
-  }, [selectedAgentSlug]);
+  const fetchPrompts = useCallback(
+    async (agent = selectedAgentSlug) => {
+      if (!isAuthenticated) return { isSuperAdmin };
+      resetFeedback();
+      try {
+        const response = await fetch(`/api/admin/prompts?agent=${agent}`, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("Failed to load prompts.");
+        }
+        const payload = await response.json();
+        setPrompts(Array.isArray(payload?.prompts) ? payload.prompts : []);
+        setCurrentPrompt(payload?.currentPrompt || null);
+        const superFlag = payload?.isSuperAdmin ?? true;
+        setIsSuperAdmin(superFlag);
+        if (Array.isArray(payload?.agents)) {
+          setAgents(payload.agents);
+        }
+        if (payload?.agentSlug) {
+          setSelectedAgentSlug(payload.agentSlug);
+        }
+        return { isSuperAdmin: superFlag };
+      } catch (error) {
+        setFeedback({ type: "error", message: error.message || "Failed to load prompts." });
+        return { isSuperAdmin };
+      }
+    },
+    [isAuthenticated, isSuperAdmin, selectedAgentSlug]
+  );
 
-  const fetchAdmins = useCallback(async (force = false) => {
-    if (!force && !isSuperAdmin) return;
-    resetFeedback();
-    const response = await fetch("/api/admin/admins", { cache: "no-store" });
-    if (!response.ok) {
-      setFeedback({ type: "error", message: "Failed to load admin users." });
-      return;
-    }
-    const payload = await response.json();
-    setAdmins(Array.isArray(payload?.admins) ? payload.admins : []);
-  }, [isSuperAdmin]);
+  const fetchAdmins = useCallback(
+    async (force = false) => {
+      if (!isAuthenticated) return;
+      if (!force && !isSuperAdmin) return;
+      resetFeedback();
+      try {
+        const response = await fetch("/api/admin/admins", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("Failed to load admin users.");
+        }
+        const payload = await response.json();
+        setAdmins(Array.isArray(payload?.admins) ? payload.admins : []);
+      } catch (error) {
+        setFeedback({ type: "error", message: error.message || "Failed to load admin users." });
+      }
+    },
+    [isAuthenticated, isSuperAdmin]
+  );
 
-  const initialize = useCallback(async () => {
-    const { data } = await supabase.auth.getSession();
-    if (data?.session?.user) {
-      setAuthStatus("ready");
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    (async () => {
       const result = await fetchPrompts(selectedAgentSlug);
       if (result?.isSuperAdmin) {
         await fetchAdmins(true);
       }
-    } else {
-      setAuthStatus("signedOut");
-    }
-  }, [fetchAdmins, fetchPrompts, selectedAgentSlug]);
+    })();
+  }, [fetchAdmins, fetchPrompts, isAuthenticated, selectedAgentSlug]);
 
-  useEffect(() => {
-    initialize();
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        setAuthStatus("ready");
-        setOtpSent(false);
-        const result = await fetchPrompts(selectedAgentSlug);
-        if (result?.isSuperAdmin) {
-          await fetchAdmins(true);
-        }
-      } else {
-        setAuthStatus("signedOut");
-        setPrompts([]);
-        setAdmins([]);
-      }
-    });
-    return () => listener.subscription.unsubscribe();
-  }, [fetchAdmins, fetchPrompts, initialize, selectedAgentSlug]);
-
-  const handleEmailSubmit = async event => {
+  const handleLogin = async event => {
     event.preventDefault();
-    resetFeedback();
-    setOtpSent(false);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: ADMIN_REDIRECT_URL,
-      },
-    });
-    if (error) {
-      setFeedback({ type: "error", message: error.message });
+    if (password.trim() === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      setAuthError("");
+      setPassword("");
     } else {
-      setOtpSent(true);
-      setFeedback({ type: "info", message: "Check your inbox for the magic link." });
+      setAuthError("Incorrect password. Try 1234.");
     }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setAgents([]);
+    setPrompts([]);
+    setCurrentPrompt(null);
+    setAdmins([]);
+    setFeedback(null);
   };
 
   const handleCreatePrompt = async event => {
     event.preventDefault();
     resetFeedback();
-    const response = await fetch("/api/admin/prompts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ agentSlug: selectedAgentSlug, version: promptVersion, content: promptContent }),
-    });
-    if (!response.ok) {
+    try {
+      const response = await fetch("/api/admin/prompts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agentSlug: selectedAgentSlug, version: promptVersion, content: promptContent }),
+      });
       const payload = await response.json().catch(() => ({}));
-      setFeedback({ type: "error", message: payload?.error || "Failed to create prompt." });
-      return;
+      if (!response.ok) {
+        throw new Error(payload?.error || "Failed to create prompt.");
+      }
+      setPromptVersion("");
+      setPromptContent("");
+      setFeedback({ type: "success", message: "Prompt saved." });
+      await fetchPrompts(selectedAgentSlug);
+    } catch (error) {
+      setFeedback({ type: "error", message: error.message || "Failed to create prompt." });
     }
-    setPromptVersion("");
-    setPromptContent("");
-    setFeedback({ type: "success", message: "Prompt saved." });
-    await fetchPrompts(selectedAgentSlug);
   };
 
   const handleAddAdmin = async event => {
     event.preventDefault();
     resetFeedback();
-    const response = await fetch("/api/admin/admins", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: newAdminEmail }),
-    });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      setFeedback({ type: "error", message: payload?.error || "Could not add admin." });
-      return;
+    try {
+      const response = await fetch("/api/admin/admins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: newAdminEmail }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.error || "Could not add admin.");
+      }
+      setNewAdminEmail("");
+      setFeedback({ type: "success", message: "Admin added." });
+      await fetchAdmins(true);
+    } catch (error) {
+      setFeedback({ type: "error", message: error.message || "Could not add admin." });
     }
-    setNewAdminEmail("");
-    setFeedback({ type: "success", message: "Admin added." });
-    await fetchAdmins();
-  };
-
-  const handleSignOut = async () => {
-    resetFeedback();
-    await supabase.auth.signOut();
-    setAuthStatus("signedOut");
-    setPrompts([]);
-    setAdmins([]);
   };
 
   const handleAgentChange = async event => {
@@ -203,41 +186,24 @@ export default function AdminPage() {
     }
   };
 
-  if (authStatus === "loading") {
-    return <main className="admin-page"><p>Loading…</p></main>;
-  }
-
-  if (authStatus === "signedOut") {
+  if (!isAuthenticated) {
     return (
       <main className="admin-page">
         <section className="admin-card">
           <h1>Admin Sign In</h1>
-          <form onSubmit={handleEmailSubmit} className="admin-form">
-            <label htmlFor="admin-email">Email</label>
+          <form onSubmit={handleLogin} className="admin-form">
+            <label htmlFor="admin-password">Password</label>
             <input
-              id="admin-email"
-              type="email"
-              value={email}
-              onChange={event => setEmail(event.target.value)}
-              placeholder="you@example.com"
+              id="admin-password"
+              type="password"
+              value={password}
+              onChange={event => setPassword(event.target.value)}
+              placeholder="Enter admin password"
               required
             />
-            <button type="submit">Send Magic Link</button>
+            <button type="submit">Sign in</button>
           </form>
-          {otpSent && <p className="admin-hint">Magic link sent. Check your inbox.</p>}
-          {feedback && <p className={`admin-msg admin-msg--${feedback.type}`}>{feedback.message}</p>}
-        </section>
-      </main>
-    );
-  }
-
-  if (authStatus === "forbidden") {
-    return (
-      <main className="admin-page">
-        <section className="admin-card">
-          <h1>Access denied</h1>
-          <p>This account is not an admin. Please contact the super admin.</p>
-          <button type="button" onClick={handleSignOut}>Sign out</button>
+          {authError && <p className="admin-msg admin-msg--error">{authError}</p>}
         </section>
       </main>
     );
@@ -263,7 +229,7 @@ export default function AdminPage() {
               </select>
             </label>
             <a className="admin-link-button" href="/table">View analyst table</a>
-            <button type="button" onClick={handleSignOut}>Sign out</button>
+            <button type="button" onClick={handleLogout}>Sign out</button>
           </div>
         </header>
 

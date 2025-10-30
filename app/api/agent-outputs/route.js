@@ -3,7 +3,7 @@ import { desc, eq } from 'drizzle-orm';
 
 import { agentOutputs } from '@/lib/db/schema';
 import { db } from '@/lib/db';
-import { FriendlyVcError, requireAuthUser } from '@/lib/friendlyVc/service';
+import { FriendlyVcError } from '@/lib/friendlyVc/service';
 
 function toCsv(rows) {
   const header = [
@@ -38,7 +38,6 @@ function toCsv(rows) {
 
 export async function GET(request) {
   try {
-    await requireAuthUser();
     const { searchParams } = new URL(request.url);
     const agent = searchParams.get('agent') || 'friendly-vc-analyst';
     const format = searchParams.get('format');

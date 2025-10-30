@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 
 import { agentOutputs, messages } from '@/lib/db/schema';
 import { db } from '@/lib/db';
-import { FriendlyVcError, requireAuthUser, logAiEvent } from '@/lib/friendlyVc/service';
+import { FriendlyVcError, logAiEvent } from '@/lib/friendlyVc/service';
 import { evaluateFriendlyAnalystSummary } from '@/lib/friendlyVc/evaluator';
 import { normalizeEvaluationResult } from '@/lib/friendlyVc/evaluationUtils';
 
@@ -18,7 +18,6 @@ async function getConversationMessages(conversationId) {
 
 export async function PATCH(request, { params }) {
   try {
-    await requireAuthUser();
     const { connectors, fitLabel, founderEmail, founderPhone, founderName, companyName } = await request.json();
 
     await db
@@ -45,7 +44,6 @@ export async function PATCH(request, { params }) {
 
 export async function POST(request, { params }) {
   try {
-    const user = await requireAuthUser();
     const body = await request.json().catch(() => ({}));
     const promptOverride = typeof body?.promptOverride === 'string' ? body.promptOverride : '';
 
@@ -88,7 +86,7 @@ export async function POST(request, { params }) {
 
     await logAiEvent({
       requestId: params.outputId,
-      userId: user.id,
+      userId: null,
       conversationId: output.conversationId,
       eventType: 'friendly_vc_evaluation',
       status: 'success',
