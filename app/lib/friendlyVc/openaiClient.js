@@ -210,3 +210,19 @@ export async function streamChatCompletion({ messages, model, maxTokens = 800, t
 }
 
 export { OpenAIRequestError };
+
+export async function chatCompletion({ messages, model, maxTokens = 800, temperature = 0.3, signal }) {
+  const payload = {
+    model,
+    messages,
+    max_tokens: maxTokens,
+    temperature,
+    stream: false,
+  };
+
+  const { response, requestId } = await executeRequest({ payload, signal });
+  const data = await response.json();
+  const content = data?.choices?.[0]?.message?.content?.trim();
+  const usage = data?.usage ?? null;
+  return { requestId, content, usage, model: data?.model ?? model };
+}

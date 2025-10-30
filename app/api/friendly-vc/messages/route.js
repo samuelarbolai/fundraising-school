@@ -16,6 +16,7 @@ import {
   recordAgentOutput,
 } from '@/lib/friendlyVc/service';
 import { streamChatCompletion, OpenAIRequestError } from '@/lib/friendlyVc/openaiClient';
+import { evaluateFriendlyAnalystSummary } from '@/lib/friendlyVc/evaluator';
 
 const DEFAULT_MODEL = process.env.OPENAI_FRIENDLY_VC_MODEL || 'gpt-4o-mini';
 const DEFAULT_PROMPT_VERSION = process.env.FRIENDLY_VC_PROMPT_VERSION || 'v1';
@@ -23,7 +24,7 @@ const DEFAULT_AGENT_SLUG = 'sales-coach';
 
 const FALLBACK_PROMPTS = {
   'sales-coach': friendlyVcSystemPrompt,
-  'friendly-vc-analyst': `You are the Friendly VC Analyst for the 30x Venture Capital fund. Evaluate startups, assign a fit label (Strong fit | Promising | Monitor | Not a fit), surface key traction metrics, risks, and recommend warm intros to VCs or portfolio operators. Respond in crisp markdown with sections: Fit, Why it matters, Metrics & proof, Risks, 30x next steps, Warm intros. Keep it factual and actionable.`,
+  'friendly-vc-analyst': `You are the Friendly VC Analyst for the 30x Venture Capital fund. Lead a conversational diligence screen to capture: company name, HQ, product, traction metrics, round status, founder contact details (full name, email, phone), top risks, and potential warm introductions. Ask follow-up questions until you are confident in the data. When you have enough context, deliver a concise analyst response with sections: Summary (2 sentences), Fit (Strong Fit | Promising | Monitor | Not a Fit + why), Metrics & Proof, Risks, 30x Next Step, Warm Intros. Keep it pragmatic. If critical data is missing, ask for it before closing.`,
 };
 
 function buildSseResponse({ meta, sourceStream }) {
@@ -217,15 +218,75 @@ export async function POST(request) {
         });
 
         if (agentSlug === 'friendly-vc-analyst') {
-          const fitMatch = /fit\s*[:\-]\s*(.+)/i.exec(result.content);
-          const fitLabel = fitMatch ? fitMatch[1].split('\n')[0].trim() : null;
-          await recordAgentOutput({
-            conversationId,
-            agentSlug,
-            summary: result.content,
-            fitLabel,
-            metadata: result.usage ?? null,
-          });
+          const conversationMessages = [
+            ...history.map(message => ({ role: message.role, content: message.content })),
+            { role: 'user', content: trimmedContent },
+            { role: 'assistant', content: result.content },
+          ];
+
+          try {
+            const evaluation = await evaluateFriendlyAnalystSummary({ conversationMessages });
+            const connectors = Array.isArray(evaluation?.connectors)
+              ? evaluation.connectors
+                  .filter(item => item?.name)
+                  .map(item => `${item.name}${item.why ? ` — ${item.why}` : ''}`)
+                  .join('\n')
+              : null;
+
+            await recordAgentOutput({
+              conversationId,
+              agentSlug,
+              summary: evaluation?.summary || result.content,
+              fitLabel: evaluation?.fitLabel || null,
+              companyName: evaluation?.companyName || null,
+              founderName: evaluation?.founderName || null,
+              founderEmail: evaluation?.founderEmail || null,
+              founderPhone: evaluation?.founderPhone || null,
+              connectors,
+              metadata: {
+                source: 'auto-evaluation',
+                usage: result.usage ?? null,
+                raw: evaluation,
+              },
+            });
+
+            await logAiEvent({
+              requestId: completion.requestId,
+              userId: user.id,
+              conversationId,
+              eventType: 'friendly_vc_evaluation',
+              status: 'success',
+              model: result.model,
+              metadata: {
+                agentSlug,
+                fitLabel: evaluation?.fitLabel || null,
+              },
+            });
+          } catch (evalError) {
+            await logAiEvent({
+              requestId: completion.requestId,
+              userId: user.id,
+              conversationId,
+              eventType: 'friendly_vc_evaluation',
+              status: 'error',
+              model: result.model,
+              metadata: {
+                agentSlug,
+                message: evalError?.message || 'Evaluation failure',
+              },
+            });
+            const fallbackFit = /fit\s*[:\-]\s*(.+)/i.exec(result.content);
+            await recordAgentOutput({
+              conversationId,
+              agentSlug,
+              summary: result.content,
+              fitLabel: fallbackFit ? fallbackFit[1].split('\n')[0].trim() : null,
+              metadata: {
+                source: 'raw-response',
+                usage: result.usage ?? null,
+              },
+            });
+          }
         }
       })
       .catch(async error => {

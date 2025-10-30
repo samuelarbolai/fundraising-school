@@ -194,12 +194,17 @@ export async function getLatestPrompt(agentSlug) {
   return rows[0] ?? null;
 }
 
-export async function recordAgentOutput({ conversationId, agentSlug, summary, fitLabel, metadata }) {
+export async function recordAgentOutput({ conversationId, agentSlug, summary, fitLabel, companyName, founderName, founderEmail, founderPhone, connectors, metadata }) {
   await db.insert(agentOutputs).values({
     conversationId,
     agentSlug,
     summary,
     fitLabel,
+    companyName: companyName ?? null,
+    founderName: founderName ?? null,
+    founderEmail: founderEmail ?? null,
+    founderPhone: founderPhone ?? null,
+    connectors: connectors ?? null,
     metadata: metadata ?? null,
   });
 }
