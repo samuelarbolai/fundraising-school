@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FriendlyVcChatModal } from "./components/FriendlyVcChatModal";
 import { LatamSourcingModal } from "./components/LatamSourcingModal";
+import { FriendlyVcChatModal } from "./components/FriendlyVcChatModal";
 
 function useRevealAnimations() {
   useEffect(() => {
@@ -184,7 +185,8 @@ function useForms() {
 }
 
 export default function HomePage() {
-  const [isFriendlyVcOpen, setIsFriendlyVcOpen] = useState(false);
+  const [isSalesCoachOpen, setIsSalesCoachOpen] = useState(false);
+  const [isAnalystOpen, setIsAnalystOpen] = useState(false);
   const [isLatamHubOpen, setIsLatamHubOpen] = useState(false);
   useRevealAnimations();
   useParallax();
@@ -193,14 +195,21 @@ export default function HomePage() {
   useAccordions();
   useForms();
 
-  const openFriendlyVc = () => setIsFriendlyVcOpen(true);
-  const handleFriendlyVcKeyDown = event => {
+  const openSalesCoach = () => setIsSalesCoachOpen(true);
+  const openAnalyst = () => setIsAnalystOpen(true);
+  const openLatamHub = () => setIsLatamHubOpen(true);
+  const handleSalesCoachKeyDown = event => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      setIsFriendlyVcOpen(true);
+      setIsSalesCoachOpen(true);
     }
   };
-  const openLatamHub = () => setIsLatamHubOpen(true);
+  const handleAnalystKeyDown = event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      setIsAnalystOpen(true);
+    }
+  };
   const handleLatamKeyDown = event => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -210,7 +219,22 @@ export default function HomePage() {
 
   return (
     <>
-      <FriendlyVcChatModal open={isFriendlyVcOpen} onClose={() => setIsFriendlyVcOpen(false)} />
+      <FriendlyVcChatModal
+        open={isSalesCoachOpen}
+        onClose={() => setIsSalesCoachOpen(false)}
+        agentSlug="sales-coach"
+        assistantLabel="Sebas"
+        title="Sales Coach — Sebas"
+        subtitle="Brutal sales coach energy. Bring receipts, get unstuck, leave with homework."
+      />
+      <FriendlyVcChatModal
+        open={isAnalystOpen}
+        onClose={() => setIsAnalystOpen(false)}
+        agentSlug="friendly-vc-analyst"
+        assistantLabel="Friendly VC Analyst"
+        title="Friendly VC Analyst"
+        subtitle="Screen startups against the 30x thesis and get next-step recommendations."
+      />
       <LatamSourcingModal open={isLatamHubOpen} onClose={() => setIsLatamHubOpen(false)} />
       <header className="site-header">
         <div className="logo-lockup">
@@ -533,25 +557,42 @@ export default function HomePage() {
           </div>
           <div className="perks-grid">
             <article
-              className="perk-card reveal interactive"
+              className="perk-card interactive reveal"
               data-reveal="fade-in"
               role="button"
               tabIndex={0}
-              aria-label="Open the Friendly VC chat agent"
-              onClick={openFriendlyVc}
-              onKeyDown={handleFriendlyVcKeyDown}
+              onClick={openSalesCoach}
+              onKeyDown={handleSalesCoachKeyDown}
+              aria-label="Open the Sales Coach agent"
             >
-              <h3>Friendly VC agent</h3>
+              <h3>Sales coach agent</h3>
               <p>
-                A straight-talking partner trained on Fundraising School playbooks and investor notes. Use it to stress-test
-                your deck, practice objections, and tighten the story investors hear first.
+                Sebas pushes founders past vanity answers and pressure-tests every sales motion. Jump in for brutal practice
+                sessions and pricing drills before the real investor call.
               </p>
-              <span className="pill accent">Conversation-based</span>
+              <span className="pill accent">Chat with Sebas</span>
+            </article>
+            <article
+              className="perk-card interactive reveal"
+              data-reveal="fade-in"
+              data-delay="80"
+              role="button"
+              tabIndex={0}
+              onClick={openAnalyst}
+              onKeyDown={handleAnalystKeyDown}
+              aria-label="Open the Friendly VC analyst agent"
+            >
+              <h3>Friendly VC analyst</h3>
+              <p>
+                Screen startups against the 30x thesis, get a fit label, and capture diligence-ready insights plus warm intro
+                ideas directly in chat.
+              </p>
+              <span className="pill">Run analysis</span>
             </article>
             <article
               className="perk-card reveal interactive"
               data-reveal="fade-in"
-              data-delay="120"
+              data-delay="160"
               role="button"
               tabIndex={0}
               aria-label="Open the LATAM lead sourcing hub preview"
