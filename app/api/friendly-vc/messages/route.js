@@ -234,6 +234,16 @@ export async function POST(request) {
             const evaluation = await evaluateFriendlyAnalystSummary({ conversationMessages });
             const normalized = normalizeEvaluationResult(evaluation);
 
+            console.info('[Friendly VC] evaluation result', {
+              conversationId,
+              summary: normalized.summary,
+              companyName: normalized.companyName,
+              founderName: normalized.founderName,
+              fitLabel: normalized.fitLabel,
+              connectorsCount: normalized.connectorsList.length,
+              signalsCount: normalized.signals.length,
+            });
+
             await recordAgentOutput({
               conversationId,
               agentSlug,
