@@ -1,8 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { getEmailRedirectUrl } from "@/lib/supabase/emailRedirect";
 import { getInitialAssistantMessage } from "@/lib/friendlyVc/constants";
 
 const LOCAL_STORAGE_KEY = "friendly-vc-conversations";
@@ -85,11 +83,8 @@ export function FriendlyVcChatModal({
   title = "Friendly VC Agent",
   subtitle = "Chat with the selected agent.",
 }) {
-  const supabase = createClient();
-  const [authStatus, setAuthStatus] = useState("unknown"); // unknown | authenticated | guest | unauthenticated
   const [email, setEmail] = useState("");
   const [emailSubmitted, setEmailSubmitted] = useState(false);
-  const [guestMode, setGuestMode] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [messagesById, setMessagesById] = useState({});
   const [activeConversationId, setActiveConversationId] = useState(null);
@@ -102,9 +97,12 @@ export function FriendlyVcChatModal({
   const previousOverflow = useRef("");
 
   const initialAssistantMessage = useMemo(() => getInitialAssistantMessage(agentSlug), [agentSlug]);
-  const storageKey = useMemo(() => `${LOCAL_STORAGE_KEY}-${agentSlug}`, [agentSlug]);
+  const storageKey = useMemo(() => {
+    const normalized = emailSubmitted ? email.trim().toLowerCase() : "guest";
+    return `${LOCAL_STORAGE_KEY}-${agentSlug}-${normalized}`;
+  }, [agentSlug, email, emailSubmitted]);
 
-  const hasAccess = emailSubmitted || authStatus === "authenticated" || guestMode;
+  const hasAccess = emailSubmitted;
 
   const activeMessages = useMemo(() => {
     if (!activeConversationId) {
@@ -113,29 +111,6 @@ export function FriendlyVcChatModal({
     const messages = messagesById[activeConversationId];
     return messages && messages.length ? messages : [initialAssistantMessage];
   }, [activeConversationId, messagesById, initialAssistantMessage]);
-
-  useEffect(() => {
-    if (!open) return;
-    const attach = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data?.session?.user) {
-        setAuthStatus("authenticated");
-        setEmailSubmitted(true);
-      } else {
-        setAuthStatus("unauthenticated");
-      }
-    };
-    attach();
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setAuthStatus("authenticated");
-        setEmailSubmitted(true);
-      }
-    });
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, [open, supabase]);
 
   useEffect(() => {
     setConversations([]);
@@ -153,7 +128,6 @@ export function FriendlyVcChatModal({
       document.body.style.overflow = previousOverflow.current;
       setEmail("");
       setEmailSubmitted(false);
-      setGuestMode(false);
       setDraft("");
       setErrorMessage("");
       setToast(null);
@@ -181,13 +155,8 @@ export function FriendlyVcChatModal({
 
   useEffect(() => {
     if (!open || !hasAccess) return;
-    if (authStatus === "authenticated") {
-      refreshRemoteConversations();
-    } else {
-      loadLocalConversations();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authStatus, hasAccess, open]);
+    loadLocalConversations();
+  }, [hasAccess, loadLocalConversations, open]);
 
   const loadLocalConversations = useCallback(() => {
     const stored = readLocalState(storageKey);
@@ -201,98 +170,20 @@ export function FriendlyVcChatModal({
     setConversations(savedConversations);
     setMessagesById(savedMessages);
     setActiveConversationId(savedConversations[0]?.id || null);
-  }, [storageKey, initialAssistantMessage]);
+  }, [storageKey]);
 
   const persistLocalState = useCallback(
     (nextConversations, nextMessages) => {
-      if (authStatus === "authenticated") return;
       writeLocalState(storageKey, { conversations: nextConversations, messages: nextMessages });
     },
-    [authStatus, storageKey]
+    [storageKey]
   );
-
-  const refreshRemoteConversations = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/friendly-vc/conversations?agent=${agentSlug}`, { cache: "no-store" });
-      if (response.status === 401) {
-        setAuthStatus("unauthenticated");
-        return;
-      }
-      if (!response.ok) {
-        throw new Error("Failed to load conversations");
-      }
-      const payload = await response.json();
-      const list = Array.isArray(payload?.conversations) ? payload.conversations : [];
-      setConversations(list);
-      if (list.length && !activeConversationId) {
-        setActiveConversationId(list[0].id);
-      }
-    } catch (error) {
-      console.error("[Friendly VC] conversation list error", error);
-      setToast({ type: "error", message: "Could not load chats." });
-    }
-  }, [activeConversationId, agentSlug]);
-
-  useEffect(() => {
-    if (!open || authStatus !== "authenticated") return;
-    refreshRemoteConversations();
-  }, [agentSlug, open, authStatus, refreshRemoteConversations]);
-
-  const fetchConversationMessages = useCallback(
-    async conversationId => {
-      if (messagesById[conversationId]) return;
-      try {
-        const response = await fetch(`/api/friendly-vc/conversations/${conversationId}`, { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error("Failed to load conversation");
-        }
-        const payload = await response.json();
-        const records = Array.isArray(payload?.messages) ? payload.messages : [];
-        const formatted = records.map(record => ({
-          id: record.id,
-          role: record.role,
-          content: record.content,
-          sequence: record.sequence,
-          model: record.model,
-          tokenUsage: record.tokenUsage,
-        }));
-        setMessagesById(prev => ({ ...prev, [conversationId]: formatted.length ? formatted : [initialAssistantMessage] }));
-      } catch (error) {
-        console.error("[Friendly VC] load conversation error", error);
-        setToast({ type: "error", message: "Could not load that chat." });
-      }
-    },
-    [messagesById]
-  );
-
-  useEffect(() => {
-    if (authStatus === "authenticated" && activeConversationId) {
-      fetchConversationMessages(activeConversationId);
-    }
-  }, [authStatus, activeConversationId, fetchConversationMessages]);
 
   const handleEmailSubmit = async event => {
     event.preventDefault();
-    setErrorMessage("");
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: getEmailRedirectUrl(),
-      },
-    });
-
-    if (error) {
-      setErrorMessage(`Error: ${error.message}`);
-    } else {
-      setEmailSubmitted(true);
-      setToast({ type: "info", message: "Check your email for a magic link to unlock history." });
-    }
-  };
-
-  const beginGuestMode = () => {
-    setGuestMode(true);
     setEmailSubmitted(true);
-    setAuthStatus("guest");
+    setErrorMessage("");
+    setToast(null);
     loadLocalConversations();
   };
 
@@ -305,44 +196,50 @@ export function FriendlyVcChatModal({
   const selectConversation = async conversationId => {
     if (conversationId === activeConversationId) return;
     setActiveConversationId(conversationId);
-    if (authStatus === "authenticated") {
-      await fetchConversationMessages(conversationId);
-    }
   };
 
-  const updateMessages = useCallback((conversationId, updater) => {
-    setMessagesById(prev => {
-      const current = prev[conversationId] || [initialAssistantMessage];
-      const next = updater(current);
-      return { ...prev, [conversationId]: next };
-    });
-  }, [initialAssistantMessage]);
+  const updateMessages = useCallback(
+    (conversationId, updater) => {
+      setMessagesById(prev => {
+        const current = prev[conversationId] || [initialAssistantMessage];
+        const next = updater(current);
+        const nextMap = { ...prev, [conversationId]: next };
+        persistLocalState(conversations, nextMap);
+        return nextMap;
+      });
+    },
+    [conversations, initialAssistantMessage, persistLocalState]
+  );
 
   const promoteConversationId = useCallback(
     (pendingId, actualId, meta) => {
       setMessagesById(prev => {
         const pendingMessages = prev[pendingId] || [initialAssistantMessage];
-        const next = { ...prev };
-        delete next[pendingId];
-        next[actualId] = pendingMessages;
-        return next;
-      });
-      setConversations(prev => {
-        const filtered = prev.filter(item => item.id !== pendingId && item.id !== actualId);
-        const now = meta?.createdAt || nowIso();
-        const entry = {
-          id: actualId,
-          title: meta?.title || deriveTitle(meta?.lastMessage || ""),
-          promptVersion: meta?.promptVersion || LOCAL_PROMPT_VERSION,
-          createdAt: now,
-          lastInteractedAt: now,
-          agentSlug: meta?.agentSlug || agentSlug,
-        };
-        return [entry, ...filtered];
+        const nextMessages = { ...prev };
+        delete nextMessages[pendingId];
+        nextMessages[actualId] = pendingMessages;
+
+        setConversations(prevConversations => {
+          const filtered = prevConversations.filter(item => item.id !== pendingId && item.id !== actualId);
+          const now = meta?.createdAt || nowIso();
+          const entry = {
+            id: actualId,
+            title: meta?.title || deriveTitle(meta?.lastMessage || ""),
+            promptVersion: meta?.promptVersion || LOCAL_PROMPT_VERSION,
+            createdAt: now,
+            lastInteractedAt: now,
+            agentSlug: meta?.agentSlug || agentSlug,
+          };
+          const nextConversations = [entry, ...filtered];
+          persistLocalState(nextConversations, nextMessages);
+          return nextConversations;
+        });
+
+        return nextMessages;
       });
       setActiveConversationId(actualId);
     },
-    [agentSlug, initialAssistantMessage]
+    [agentSlug, initialAssistantMessage, persistLocalState]
   );
 
   const handleSendMessage = async event => {
@@ -350,81 +247,75 @@ export function FriendlyVcChatModal({
     const trimmed = draft.trim();
     if (!trimmed || isStreaming) return;
 
-    setDraft("");
-    setErrorMessage("");
-    setToast(null);
-
-    if (authStatus !== "authenticated") {
-      const localId = activeConversationId || `local-${Date.now()}`;
-      const timestamp = nowIso();
-      const existingMessages = messagesById[localId]?.length ? messagesById[localId] : [initialAssistantMessage];
-      const userRecord = { id: `user-${timestamp}`, role: "user", content: trimmed, createdAt: timestamp };
-      const nextMessages = [...existingMessages, userRecord];
-      const nextConversations = (() => {
-        const base = conversations.filter(item => item.id !== localId);
-        const meta = {
-          id: localId,
-          title: deriveTitle(trimmed),
-          promptVersion: LOCAL_PROMPT_VERSION,
-          createdAt: conversations.find(item => item.id === localId)?.createdAt || timestamp,
-          lastInteractedAt: timestamp,
-          agentSlug,
-        };
-        return [meta, ...base];
-      })();
-
-      setActiveConversationId(localId);
-      setConversations(nextConversations);
-      setMessagesById(prev => {
-        const nextMap = { ...prev, [localId]: nextMessages };
-        persistLocalState(nextConversations, nextMap);
-        return nextMap;
-      });
-      setToast({ type: "info", message: "Sign in to sync this chat." });
+    if (!emailSubmitted) {
+      setErrorMessage("Enter your email to start chatting.");
       return;
     }
 
+    const timestamp = nowIso();
+    const assistantMessageId = `assistant-${Date.now()}`;
+
     let workingId = activeConversationId;
     let pendingId = null;
-    const timestamp = nowIso();
 
     if (!workingId) {
       pendingId = `pending-${Date.now()}`;
       workingId = pendingId;
-      setConversations(prev => [
-        {
-          id: pendingId,
-          title: deriveTitle(trimmed),
-          promptVersion: LOCAL_PROMPT_VERSION,
-          createdAt: timestamp,
-          lastInteractedAt: timestamp,
-          isPending: true,
-        },
-        ...prev,
-      ]);
-      setActiveConversationId(pendingId);
     }
 
-    const assistantMessageId = `assistant-${Date.now()}`;
-    updateMessages(workingId, current => ([
-      ...(current.length ? current : [initialAssistantMessage]),
-      { id: `user-${timestamp}`, role: "user", content: trimmed, createdAt: timestamp },
-      { id: assistantMessageId, role: "assistant", content: "", pending: true },
-    ]));
+    setDraft("");
+    setErrorMessage("");
+    setToast(null);
+
+    setMessagesById(prev => {
+      const history = Array.isArray(prev[workingId]) && prev[workingId].length ? prev[workingId] : [initialAssistantMessage];
+      const userMessage = { id: `user-${timestamp}`, role: "user", content: trimmed, createdAt: timestamp };
+      const assistantPlaceholder = { id: assistantMessageId, role: "assistant", content: "", pending: true };
+      const nextMessages = [...history, userMessage, assistantPlaceholder];
+      const nextMap = { ...prev, [workingId]: nextMessages };
+
+      setConversations(prevConversations => {
+        const existing = prevConversations.find(item => item.id === workingId);
+        const meta = existing
+          ? {
+              ...existing,
+              title: existing.title || deriveTitle(trimmed),
+              lastInteractedAt: timestamp,
+              isPending: existing.isPending || Boolean(pendingId),
+            }
+          : {
+              id: workingId,
+              title: deriveTitle(trimmed),
+              promptVersion: LOCAL_PROMPT_VERSION,
+              createdAt: timestamp,
+              lastInteractedAt: timestamp,
+              agentSlug,
+              isPending: Boolean(pendingId),
+            };
+        const filtered = prevConversations.filter(item => item.id !== workingId);
+        const nextConversations = [meta, ...filtered];
+        persistLocalState(nextConversations, nextMap);
+        return nextConversations;
+      });
+
+      return nextMap;
+    });
+
+    setActiveConversationId(workingId);
 
     setIsStreaming(true);
     if (typeof window !== "undefined") {
       window.dispatchEvent(
         new CustomEvent("friendlyvc:request", {
-        detail: {
-          conversationId: workingId,
-          contentLength: trimmed.length,
-          timestamp,
-          agentSlug,
-        },
-      })
-    );
-  }
+          detail: {
+            conversationId: workingId,
+            contentLength: trimmed.length,
+            timestamp,
+            agentSlug,
+          },
+        })
+      );
+    }
 
     try {
       const response = await fetch("/api/friendly-vc/messages", {
@@ -434,6 +325,7 @@ export function FriendlyVcChatModal({
           conversationId: workingId.startsWith("pending-") ? null : workingId,
           content: trimmed,
           agentSlug,
+          email: email.trim(),
         }),
       });
 
@@ -492,8 +384,18 @@ export function FriendlyVcChatModal({
           }
         },
       });
-
-      await refreshRemoteConversations();
+      setConversations(prev => {
+        const next = prev.map(conversation =>
+          conversation.id === liveConversationId
+            ? { ...conversation, lastInteractedAt: nowIso(), isPending: false }
+            : conversation
+        );
+        setMessagesById(prevMessages => {
+          persistLocalState(next, prevMessages);
+          return prevMessages;
+        });
+        return next;
+      });
     } catch (error) {
       console.error("[Friendly VC] send error", error);
       setErrorMessage(error.message || "Unexpected error. Try again.");
@@ -524,7 +426,7 @@ export function FriendlyVcChatModal({
   const renderGate = () => (
     <div className="friendly-vc-modal__auth">
       <form onSubmit={handleEmailSubmit}>
-        <label htmlFor="email-input">Enter your email to start and save your chat history.</label>
+        <label htmlFor="email-input">Enter your email to start the chat.</label>
         <input
           id="email-input"
           ref={inputRef}
@@ -534,11 +436,7 @@ export function FriendlyVcChatModal({
           placeholder="you@startup.com"
           required
         />
-        <button type="submit">Send magic link</button>
-        <button type="button" className="friendly-vc-modal__secondary" onClick={beginGuestMode}>
-          Continue without signing in
-        </button>
-        {errorMessage && <p className="friendly-vc-modal__error">{errorMessage}</p>}
+        <button type="submit">Start chat</button>
       </form>
     </div>
   );

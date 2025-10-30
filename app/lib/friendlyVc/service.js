@@ -45,10 +45,14 @@ export async function listConversations(userId, agentSlug) {
 }
 
 export async function getConversationById(userId, conversationId) {
+  const condition = userId
+    ? and(eq(conversations.id, conversationId), eq(conversations.userId, userId))
+    : eq(conversations.id, conversationId);
+
   const rows = await db
     .select()
     .from(conversations)
-    .where(and(eq(conversations.id, conversationId), eq(conversations.userId, userId)))
+    .where(condition)
     .limit(1);
   return rows[0] ?? null;
 }
@@ -122,42 +126,44 @@ export async function logAiEvent(event) {
 }
 
 export async function enforceRateLimit({ userId }) {
-  const hourlyResult = await db.execute(sql`
-    SELECT COUNT(*) AS count
-    FROM messages m
-    JOIN conversations c ON c.id = m.conversation_id
-    WHERE c.user_id = ${userId}
-      AND m.role = 'assistant'
-      AND m.created_at >= now() - interval '1 hour'
-  `);
+  if (userId) {
+    const hourlyResult = await db.execute(sql`
+      SELECT COUNT(*) AS count
+      FROM messages m
+      JOIN conversations c ON c.id = m.conversation_id
+      WHERE c.user_id = ${userId}
+        AND m.role = 'assistant'
+        AND m.created_at >= now() - interval '1 hour'
+    `);
 
-  const hourCount = Number(hourlyResult?.rows?.[0]?.count ?? 0);
-  if (hourCount >= USER_HOURLY_LIMIT) {
-    throw new FriendlyVcError('Hourly limit reached', {
-      status: 429,
-      code: 'rate_limit_hourly',
-      retryAfter: 3600,
-      bucket: 'user_hourly',
-    });
-  }
+    const hourCount = Number(hourlyResult?.rows?.[0]?.count ?? 0);
+    if (hourCount >= USER_HOURLY_LIMIT) {
+      throw new FriendlyVcError('Hourly limit reached', {
+        status: 429,
+        code: 'rate_limit_hourly',
+        retryAfter: 3600,
+        bucket: 'user_hourly',
+      });
+    }
 
-  const burstResult = await db.execute(sql`
-    SELECT COUNT(*) AS count
-    FROM messages m
-    JOIN conversations c ON c.id = m.conversation_id
-    WHERE c.user_id = ${userId}
-      AND m.role = 'assistant'
-      AND m.created_at >= now() - interval '2 minutes'
-  `);
+    const burstResult = await db.execute(sql`
+      SELECT COUNT(*) AS count
+      FROM messages m
+      JOIN conversations c ON c.id = m.conversation_id
+      WHERE c.user_id = ${userId}
+        AND m.role = 'assistant'
+        AND m.created_at >= now() - interval '2 minutes'
+    `);
 
-  const burstCount = Number(burstResult?.rows?.[0]?.count ?? 0);
-  if (burstCount >= USER_BURST_LIMIT) {
-    throw new FriendlyVcError('Too many requests', {
-      status: 429,
-      code: 'rate_limit_burst',
-      retryAfter: 120,
-      bucket: 'user_burst',
-    });
+    const burstCount = Number(burstResult?.rows?.[0]?.count ?? 0);
+    if (burstCount >= USER_BURST_LIMIT) {
+      throw new FriendlyVcError('Too many requests', {
+        status: 429,
+        code: 'rate_limit_burst',
+        retryAfter: 120,
+        bucket: 'user_burst',
+      });
+    }
   }
 
   const globalResult = await db.execute(sql`

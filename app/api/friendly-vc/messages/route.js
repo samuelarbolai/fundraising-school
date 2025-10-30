@@ -9,7 +9,6 @@ import {
   getMessagesForConversation,
   insertMessage,
   logAiEvent,
-  requireAuthUser,
   updateConversationMeta,
   getNextMessageSequence,
   getLatestPrompt,
@@ -72,7 +71,6 @@ function buildSseResponse({ meta, sourceStream }) {
 export async function POST(request) {
   const startedAt = Date.now();
   let payload;
-  let user = null;
   let conversationId;
   let agentSlug = DEFAULT_AGENT_SLUG;
   try {
@@ -81,7 +79,8 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Invalid JSON payload.' }, { status: 400 });
   }
 
-  const { conversationId: incomingConversationId, content, agentSlug: rawAgentSlug } = payload || {};
+  const { conversationId: incomingConversationId, content, agentSlug: rawAgentSlug, email: rawEmail } = payload || {};
+  const userEmail = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : null;
 
   if (!content || typeof content !== 'string') {
     return NextResponse.json({ error: 'Message content is required.' }, { status: 400 });
@@ -97,8 +96,7 @@ export async function POST(request) {
   }
 
   try {
-    user = await requireAuthUser();
-    await enforceRateLimit({ userId: user.id });
+    await enforceRateLimit({ userId: null });
 
     agentSlug = (rawAgentSlug || DEFAULT_AGENT_SLUG).toLowerCase();
 
@@ -109,7 +107,7 @@ export async function POST(request) {
 
     let conversation = null;
     if (incomingConversationId) {
-      conversation = await getConversationById(user.id, incomingConversationId);
+      conversation = await getConversationById(null, incomingConversationId);
       if (!conversation) {
         return NextResponse.json({ error: 'Conversation not found.' }, { status: 404 });
       }
@@ -121,7 +119,7 @@ export async function POST(request) {
     if (!conversation) {
       const title = deriveConversationTitle(trimmedContent);
       conversation = await createConversation({
-        userId: user.id,
+        userId: null,
         promptVersion,
         title,
         agentSlug,
@@ -137,6 +135,7 @@ export async function POST(request) {
       role: 'user',
       content: trimmedContent,
       sequence,
+      metadata: userEmail ? { senderEmail: userEmail } : null,
     });
 
     await updateConversationMeta(conversationId, {
@@ -159,7 +158,7 @@ export async function POST(request) {
 
     await logAiEvent({
       requestId: completion.requestId,
-      userId: user.id,
+      userId: null,
       conversationId,
       eventType: 'friendly_vc_stream',
       status: 'open',
@@ -168,6 +167,7 @@ export async function POST(request) {
         promptVersion,
         messageLength: trimmedContent.length,
         agentSlug,
+        userEmail,
       },
     });
 
@@ -195,6 +195,7 @@ export async function POST(request) {
           model: result.model,
           tokenUsage: result.usage ?? null,
           latencyMs,
+          metadata: userEmail ? { recipientEmail: userEmail } : null,
         });
 
         await updateConversationMeta(conversationId, {
@@ -203,7 +204,7 @@ export async function POST(request) {
 
         await logAiEvent({
           requestId: completion.requestId,
-          userId: user.id,
+          userId: null,
           conversationId,
           eventType: 'friendly_vc_completion',
           status: 'success',
@@ -214,6 +215,7 @@ export async function POST(request) {
             finishReason: result.finishReason || null,
             promptVersion,
             agentSlug,
+            userEmail,
           },
         });
 
@@ -247,12 +249,13 @@ export async function POST(request) {
                 source: 'auto-evaluation',
                 usage: result.usage ?? null,
                 raw: evaluation,
+                requesterEmail: userEmail,
               },
             });
 
             await logAiEvent({
               requestId: completion.requestId,
-              userId: user.id,
+              userId: null,
               conversationId,
               eventType: 'friendly_vc_evaluation',
               status: 'success',
@@ -260,12 +263,13 @@ export async function POST(request) {
               metadata: {
                 agentSlug,
                 fitLabel: evaluation?.fitLabel || null,
+                userEmail,
               },
             });
           } catch (evalError) {
             await logAiEvent({
               requestId: completion.requestId,
-              userId: user.id,
+              userId: null,
               conversationId,
               eventType: 'friendly_vc_evaluation',
               status: 'error',
@@ -273,6 +277,7 @@ export async function POST(request) {
               metadata: {
                 agentSlug,
                 message: evalError?.message || 'Evaluation failure',
+                userEmail,
               },
             });
             const fallbackFit = /fit\s*[:\-]\s*(.+)/i.exec(result.content);
@@ -284,6 +289,7 @@ export async function POST(request) {
               metadata: {
                 source: 'raw-response',
                 usage: result.usage ?? null,
+                requesterEmail: userEmail,
               },
             });
           }
@@ -292,7 +298,7 @@ export async function POST(request) {
       .catch(async error => {
         await logAiEvent({
           requestId: completion.requestId,
-          userId: user.id,
+          userId: null,
           conversationId,
           eventType: 'friendly_vc_completion',
           status: 'error',
@@ -300,6 +306,7 @@ export async function POST(request) {
           metadata: {
             message: error?.message || 'Stream cancelled',
             agentSlug,
+            userEmail,
           },
         });
       });
@@ -318,10 +325,10 @@ export async function POST(request) {
     }
 
     if (error instanceof OpenAIRequestError) {
-      if (user?.id && conversationId) {
+      if (conversationId) {
         await logAiEvent({
           requestId: error.body?.id || `error-${Date.now()}`,
-          userId: user.id,
+          userId: null,
           conversationId,
           eventType: 'friendly_vc_completion',
           status: 'error',
@@ -330,6 +337,7 @@ export async function POST(request) {
             message: error.message,
             providerStatus: error.status,
             agentSlug,
+            userEmail,
           },
         });
       }
@@ -339,10 +347,10 @@ export async function POST(request) {
       );
     }
 
-    if (user?.id && conversationId) {
+    if (conversationId) {
       await logAiEvent({
         requestId: `unexpected-${Date.now()}`,
-        userId: user.id,
+        userId: null,
         conversationId,
         eventType: 'friendly_vc_completion',
         status: 'error',
@@ -350,6 +358,7 @@ export async function POST(request) {
         metadata: {
           message: error?.message || 'Unexpected error',
           agentSlug,
+          userEmail,
         },
       });
     }

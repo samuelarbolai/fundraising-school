@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { getEmailRedirectUrl } from "@/lib/supabase/emailRedirect";
 import { FriendlyVcChatModal } from "@/components/FriendlyVcChatModal";
 
 const supabase = createClient();
+const ADMIN_REDIRECT_URL = "https://fundraising-school.onrender.com/admin";
 
 const DEFAULT_AGENT_SLUG = "sales-coach";
 
@@ -136,7 +136,7 @@ export default function AdminPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: getEmailRedirectUrl(),
+        emailRedirectTo: ADMIN_REDIRECT_URL,
       },
     });
     if (error) {
